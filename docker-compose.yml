@@ -1,0 +1,30 @@
+# NOTE - THIS IS A DEV COMPOSE FILE!!!!
+version: "2"
+services:
+  php-fpm:
+    image: jamesway/php71-fpm-xdebug
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    env_file: .env
+    environment:
+      #app engine service credentials path
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+      #relative to php-fpm volume
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+
+  php-cli:
+    image: jamesway/php71-cli-dev
+    working_dir: /app
+    volumes:
+      - ./:/app
+
+  #when changing the service label for php-fpm, update the nginx.conf with the service name
+  nginx:
+    image: nginx:1.12-alpine
+    working_dir: /var/www
+    volumes:
+      - ./nginx_conf:/etc/nginx/conf.d
+      - ./:/var/www
+    ports:
+      - 8080:80

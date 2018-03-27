@@ -1,0 +1,23 @@
+# NOTE - UPDATES SERVICES WITH DOCKER SYNC!!!!
+version: "2"
+services:
+  php-fpm:
+    volumes:
+      - app-sync:/var/www:nocopy # enable for docker-sync
+
+  php-cli:
+    volumes:
+      - app-sync:/app:nocopy # enable for docker-sync
+
+  #when changing the service label for php-fpm, update the vhost-dev.conf or nginx fails
+  nginx:
+    volumes:
+      - app-sync:/var/www:nocopy # enable for docker-sync
+
+# Named volumes persist after their container is removed which makes them ideal for data storage containers.
+# When making changes to a service config (eg. mariadb) that uses "dbdata",
+# or if mariadb becomes corrupted, remove the named volume and start fresh before bringing the stack up
+volumes:
+  # external since they're from docker-sync/unison containers
+  app-sync:         # enable for docker-sync
+    external: true  # enable for docker-sync

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="/resources/assets/css/demo.css?{{ 'now'|date('U') }}">
+    <title>{{ title }}</title>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js" integrity="sha384-SlE991lGASHoBfWbelyBPLsUlwY1GwNDJo3jSJO04KZ33K2bwfV9YBauFfnzvynJ" crossorigin="anonymous"></script>
+  </head>
+  <body>
+
+  {% if e %}
+    <div class="container">
+      <div class="alert alert-danger" role="alert">
+      </div>
+    </div>
+  {% endif %}
+
+    {% if e == NULL %}
+    <div class="msg-container container border border-secondary rounded">
+
+      {% set date_header = NULL %}
+      {% for msg in messages %}
+        {% set tmp_date_header  = (msg.internalDate / 1000) | date("l, F jS Y") %}
+        {% if date_header !=  tmp_date_header %}
+          {% set date_header = tmp_date_header %}
+
+      <div class="row">
+        <div class="col bg-light text-info text-center date-header">
+          <h6>{{ date_header }}</h6>
+        </div>
+      </div>
+
+        {% endif %}
+        <div class="row">
+          <div class="col-2 text-right">
+              {{ (msg.internalDate / 1000) | date("g:ia") }}
+          </div>
+          <div class="col message-snippet text-truncate" data-toggle="modal" data-target="#messageModal" data-message="{{ msg.payload.parts[0].body.data }}">
+
+              {{ msg.snippet|raw|striptags }}
+          </div>
+        </div>
+      {% endfor %}
+      <div class="row">
+        <div class="nav-btns col text-right">
+            {%  if prevPage %}
+              <a href="/page/{{  prevPage }}" role="button"><i class="text-info fas fa-arrow-alt-circle-left fa-2x"></i></a>
+            {% endif %}
+            {%  if nextPage %}
+              <a href="/page/{{  nextPage }}" role="button"><i class="text-info fas fa-arrow-alt-circle-right fa-2x"></i></a>
+            {% endif %}
+        </div>
+      </div>
+    </div>
+
+        <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="messageModalLabel">Message</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="/resources/assets/js/demo.js?{{ 'now'|date('U') }}"></script>
+  </body>
+</html>

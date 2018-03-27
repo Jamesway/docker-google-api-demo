@@ -1,0 +1,32 @@
+#https://duske.me/performant-docker-container-sync-with-docker-sync/
+#hack for docker volume performance on os x using a unison volume
+# docker-sync.yml
+# this name has to be unique and is used in docker-compose.yml as well
+# docker-sync 0.20 https://github.com/EugenMayer/docker-sync/wiki/5.-Changelog
+#
+# docker sync/unison error: End_of_file exception raised in loading archive (this indicates a bug!)
+# the archive on the remote or host is corrupt
+# on os x the archive is in: ~/Library/Application Support/Unison
+# in a linux/docker container: /.unison/
+# - check the remote container /.unison/ dir for archive files with 0 bytes and remove them
+# - stop the container
+# - restart docker-sync, unison should direct you to delete the corresponding local file
+# - stop the container, if necessary
+# - restart docker-sync, it should start normally
+version: "2"
+options:
+  #verbose: true
+  #max-attempt: 30
+syncs:
+  app-sync:
+    src: './' # the directory on the host system
+    #dest: '/app' # the directory on the container
+    sync_host_ip: '192.168.99.100' # localhost for docker for mac
+    sync_host_port: 10872 # unique port
+    sync_strategy: 'unison'
+    #sync_strategy: 'rsync'
+    #sync_user: 'www-data'
+    sync_userid: '1000' #id for www-data
+    #sync_group: 'www-data'
+    #sync_groupid: '82'
+#    verbose: true

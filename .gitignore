@@ -1,0 +1,7 @@
+.docker-sync
+.env
+vendor
+*.DS_Store
+.idea
+.secrets
+secrets
