@@ -1,4 +1,4 @@
-# Google App Engine development without putting secrets in app.yaml + Docker
+# Google App Engine development without putting secrets in app.yaml with Docker's help
 
 ## Background
 
@@ -84,8 +84,10 @@ Cons
 
 
 ## JMail - A Quick Demo with Gmail
-I used PHP 7.1 for this app (maybe I'll add a Python version at somepoint). The technique is the same with any stack.  
-This is a light, sans framework demo including:
+I used PHP 7.1 for this app (maybe I'll add a Python version at somepoint).  
+The technique is the same with any stack.  
+
+This is a light, sans framework demo that includes:
 - FastRoute - router
 - PHP-DI - depedency injection container
 - twig template engine
