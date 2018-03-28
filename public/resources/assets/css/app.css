@@ -7,3 +7,18 @@
 .nav-btns {
     margin: 10px;
 }
+#messageModalFrom {
+    margin-top: 20px;
+}
+#messageModalDate {
+    margin-bottom: 20px;
+}
+.message-subject {
+    cursor: pointer;
+}
+.title-bar {
+    font-family: 'Righteous', cursive;
+}
+.title-bar h4 {
+    margin-top: 0.5rem;
+}

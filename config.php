@@ -12,8 +12,9 @@ return [
     'FastRoute\DataGenerator' => DI\autowire('FastRoute\DataGenerator\GroupCountBased'),
     'FastRoute\RouteCollector' => DI\autowire('FastRoute\RouteCollector')
         /* only comma the last route */
-        ->method('addRoute', 'GET', '/page/{page_history:[0-9\:]+}', 'App\Controllers\BaseController')
-        ->method('addRoute', 'GET', '/', 'App\Controllers\BaseController'),
+        ->method('addRoute', 'GET', '/message/{message_id:[a-f0-9]+}', 'App\Controllers\MessageController')
+        ->method('addRoute', 'GET', '/page/{page_history:[0-9\:]+}', 'App\Controllers\MailListController')
+        ->method('addRoute', 'GET', '/', 'App\Controllers\MailListController'),
 
     'FastRoute\Dispatcher' => function (FastRoute\RouteCollector $collector) {
         return new FastRoute\Dispatcher\GroupCountBased($collector->getData());

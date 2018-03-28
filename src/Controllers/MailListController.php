@@ -13,7 +13,7 @@ use App\GmailService;
 use App\SecretDataStore;
 use App\GoogleClientBuilder;
 
-class BaseController implements IController
+class MailListController implements IController
 {
 
     protected $twig;
@@ -38,7 +38,6 @@ class BaseController implements IController
 
             if (!getenv('GOOGLE_APPLICATION_CREDENTIALS', true)) {
 
-
                 throw new\Exception('Google Application credentials path not found');
             }
 
@@ -53,56 +52,53 @@ class BaseController implements IController
             //authenicated google service
             $gmail = GmailService::create($gclient, 'me');
 
-            //this reads all messages
-            //to be more useful:
-            //list all messages
-            //get the history id and store it
-            //look up the messages using the stored history id
-            //store the new history id
-            //repeat
             $messages = [];
 
             //since there's no "previous" pageToken method in gmail api, use a delim string/array of page history, not pretty since the links will be long
             $page_history = isset($params['page_history']) && $params['page_history'] ? explode(':', $params['page_history']) : [];
 
             //page_token is the last item in page_history
-            $page_token = end($page_history);
+            $current_page_token = end($page_history);
+            $next_page_token = NULL;
 
-            if ($result = $gmail->getList($page_token)) {
+
+            //we're reading all the messages in the inbox
+            //were we actually making a gmail client,
+            //we should initially read all the messages in the inbox (users.messages.list)
+            //then store the history id
+            //then use users.history.list to list messages since the stored id
+            //then store the new history id
+            //wash, rinse, repeat
+            if ($result = $gmail->getList($current_page_token)) {
 
                 $messages = array_merge($messages, $result['messages']);
-                $page_token = $result['nextPageToken'];
+                $next_page_token = $result['nextPageToken'];
             }
 
-            //batch getting the emails from the ids
+            //built a paginator because generating previous links is tricky since 1st page hase no page token
+            $pagination = $gmail->paginator($page_history, $next_page_token);
+
+            //list gives us the ids, but we need to get the messages for more data
+            //to get the meta we need to batch gmail->get()
             $gclient->setUseBatch(true);
             $batch = new \Google_Http_Batch($gclient);
+            $batch_gmail = GmailService::create($gclient, 'me');    //batch enable service
 
-            $gmail = new \Google_Service_Gmail($gclient);
-
+            //get subject and from
             foreach ($messages as $msg) {
 
-                $request = $gmail->users_messages->get('me', $msg['id']);
-                $batch->add($request, $msg['id']);
-
+                $batch->add($batch_gmail->getMeta($msg['id']), $msg['id']); //the second param is for identifying the individual request
             }
             $messages = $batch->execute();
 
 
-            //use the page history array to generate next and previous links
-            //prev page
-            $prev_page = implode(':', array_slice($page_history, 0, -1));
-
-            //next page
-            //trim : when prev_page = '' eg first page
-            $next_page = $page_token ? trim($prev_page . ':' . $page_token, ':') : '';
-
+            //render template
             echo $this->twig->render('gmail.html.twig',
                 [
                     "title" => "Gmail Demo",
                     "messages" => $messages,
-                    "prevPage" => $prev_page,
-                    "nextPage" => $next_page
+                    "prevPage" => $pagination['prev'],
+                    "nextPage" => $pagination['next']
                 ]
             );
 
@@ -110,7 +106,7 @@ class BaseController implements IController
 
             echo $e->getMessage();
 
-            echo $this->twig->render('gmail.html.twig', ["title" => "Gmail Demo - Error", "error" => "error"]);
+            echo $this->twig->render('gmail.html.twig', ["title" => "Oh Snap!", "error" => "error"]);
 
         }
     }
