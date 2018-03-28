@@ -2,8 +2,7 @@
 <html lang="en">
   <head>
     <!-- Required meta tags -->
-    <!--<meta charset="utf-8">-->
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
@@ -42,10 +41,10 @@
 
         {% endif %}
         <div class="row">
-          <div class="col-2 text-right">
+          <div class="col-3 col-sm-2 text-right">
               {{ (msg.internalDate / 1000) | date("g:ia") }}
           </div>
-          <div class="message-subject col text-truncate" data-toggle="modal" data-target="#messageModal" data-message-id="{{ msg.id }}">
+          <div class="message-subject col-9 col-sm-10 text-truncate" data-toggle="modal" data-target="#messageModal" data-message-id="{{ msg.id }}">
               {{ msg.snippet|raw }}
           </div>
         </div>

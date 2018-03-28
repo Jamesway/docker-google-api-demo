@@ -167,17 +167,10 @@ class GoogleClientBuilder
     }
 
 
-    private function refreshCredentials() : array {
+    private function refreshCredentials() {
 
-        //TODO I don't think it's necessary to update the secret store since the refresh token should be the same
-        if ($this->gclient->isAccessTokenExpired()) {
-
-            $tmp = 1;
-
-            //returns an array of new credentials
-            return $this->gclient->fetchAccessTokenWithRefreshToken($this->gclient->getRefreshToken());
-        }
-        return [];
+        //returns an array of new credentials
+        return $this->gclient->fetchAccessTokenWithRefreshToken($this->gclient->getRefreshToken());
     }
 
     //used for secret filenames and secretstore property names
@@ -239,10 +232,10 @@ class GoogleClientBuilder
         $this->gclient->setAccessToken($this->getSecret($credentials_name));
 
         //refresh credentials if they need it
-        if (!empty($new_credentials = $this->refreshCredentials())) {
-            
+        if ($this->gclient->isAccessTokenExpired()) {
+
             //store new creds locally
-            $this->writeSecret($this->generateSecretPath($credentials_name), $new_credentials);
+            $this->writeSecret($this->generateSecretPath($credentials_name), $this->refreshCredentials());
         }
     }
 

@@ -21,19 +21,5 @@ return [
     },
 
     /* twig */
-    'views.path' => __DIR__ . '/resources/views',
-    'Twig_LoaderInterface' => DI\create('Twig_Loader_Filesystem')->constructor(DI\get('views.path')),
-
-    /* Secrets */
-    'redis.conn' => [
-        "scheme" => DI\env('REDIS_SCHEME'),
-        "host" => DI\env('REDIS_HOST'),
-        "port" => DI\env('REDIS_PORT'),
-        "password" => DI\env('REDIS_PASSWORD')
-    ],
-
-
-    /* Redis */
-    /*'Predis\Client' => DI\create()->constructor(DI\get('redis.conn'))*/
-
+    'Twig_LoaderInterface' => DI\create('Twig_Loader_Filesystem')->constructor(__DIR__ . '/resources/views'),
 ];
