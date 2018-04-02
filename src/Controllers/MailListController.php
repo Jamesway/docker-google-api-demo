@@ -16,12 +16,15 @@ use App\GoogleClientBuilder;
 class MailListController implements IController
 {
 
+    protected $container;
     protected $twig;
 
-    public function __construct(\Twig_Environment $twig)
+    public function __construct(\Google_Client $gclient, \Twig_Environment $twig)
     {
 
         $this->twig = $twig;
+
+        $this->gclient = $gclient;
     }
 
     public function execute(array $params)
@@ -41,16 +44,18 @@ class MailListController implements IController
                 throw new\Exception('Google Application credentials path not found');
             }
 
-            //build the builder
-            $builder = new GoogleClientBuilder(new \Google_Client(), SecretDataStore::create());
-            $scopes = [\Google_Service_Gmail::GMAIL_READONLY];
-            $builder->authenticateClient("test app", $scopes, 'GMAIL_READONLY');
 
-            //authenticated google client
-            $gclient = $builder->getClient();
+
+//            //build the builder
+//            $builder = new GoogleClientBuilder(new \Google_Client(), SecretDataStore::create());
+//            $scopes = [\Google_Service_Gmail::GMAIL_READONLY];
+//            $builder->authenticateClient("test app", $scopes, 'GMAIL_READONLY');
+//
+//            //authenticated google client
+//            $gclient = $builder->getClient();
 
             //authenicated google service
-            $gmail = GmailService::create($gclient, 'me');
+            $gmail = GmailService::create($this->gclient, 'me');
 
             $messages = [];
 
@@ -80,9 +85,9 @@ class MailListController implements IController
 
             //list gives us the ids, but we need to get the messages for more data
             //to get the meta we need to batch gmail->get()
-            $gclient->setUseBatch(true);
-            $batch = new \Google_Http_Batch($gclient);
-            $batch_gmail = GmailService::create($gclient, 'me');    //batch enable service
+            $this->gclient->setUseBatch(true);
+            $batch = new \Google_Http_Batch($this->gclient);
+            $batch_gmail = GmailService::create($this->gclient, 'me');    //batch enable service
 
             //get subject and from
             foreach ($messages as $msg) {

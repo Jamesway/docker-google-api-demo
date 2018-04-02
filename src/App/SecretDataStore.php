@@ -23,8 +23,18 @@ class SecretDataStore implements ISecretStore
     protected $datastore;
 
 
-    private function __construct($datastore)
+    private function __construct($datastore, $kind, $id)
     {
+
+        if ($this->isInvalidStr($kind)) {
+
+            throw new \Exception('Google Cloud Datastore Kind required');
+        }
+
+        if ($this->isInvalidStr($id)) {
+
+            throw new \Exception('Google Cloud Datastore ID required');
+        }
 
         $this->ds_key = $datastore->key(self::GCDS_KIND, self::GCDS_ID);
 
@@ -77,11 +87,11 @@ class SecretDataStore implements ISecretStore
         $transaction->commit();
     }
 
-    public static function create() {
+    public static function create($kind, $id) {
 
 //        return new static(new DatastoreClient(['projectId' => getenv('GOOGLE_CLOUD_PROJECT')]));
 
-        return new static(new DatastoreClient());   //get the project id and service key from the env
+        return new static(new DatastoreClient(), $kind, $id);   //get the project id and service key from the env
     }
 
 }
