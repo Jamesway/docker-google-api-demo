@@ -14,32 +14,23 @@ class SecretDataStore implements ISecretStore
 {
 
     //https://cloud.google.com/datastore/docs/concepts/entities
-    protected $ds_key;
-    protected $kind;
-    protected $id;
     protected $datastore;
 
-    const SECRET_PATH = "/var/www/.secrets";    //based on runtime location
+    protected $entity_key;
+
+    protected $secrets_path;
+
+    protected $prefix;      // property/filename prefix
 
 
-    public function __construct(DatastoreClient $datastore, $kind, $id)
+    private function __construct(DatastoreClient $datastore, $secrets_path, $prefix)
     {
 
-        if ($this->isInvalidStr($kind)) {
-
-            throw new \Exception('Google Cloud Datastore Kind required');
-        }
-        $this->kind = $kind;
-
-        if ($this->isInvalidStr($id)) {
-
-            throw new \Exception('Google Cloud Datastore ID required');
-        }
-        $this->id = $id;
-
-        $this->ds_key = $datastore->key($this->kind, $this->id);
+        $this->prefix = $prefix;
 
         $this->datastore = $datastore;
+
+        $this->secrets_path = $secrets_path;
     }
 
 
@@ -48,6 +39,7 @@ class SecretDataStore implements ISecretStore
         return !is_string($string) || strlen($string) === 0;
     }
 
+
     //validate arrays aren't empty
     private function isInvalidArray($input) {
 
@@ -55,39 +47,46 @@ class SecretDataStore implements ISecretStore
     }
 
 
-    public function set($property, $new_value) {
+    private function generatePrefixedSecretName($secret_name) {
 
-        if ($this->isInvalidStr($property)) {
+        if ($this->isInvalidStr($secret_name)) {
 
-            throw new \Exception('Property name string is required');
+            throw new \Exception('Secret property name string required');
         }
 
-        if (!isset($new_value)) {
+        //no valid prefix
+        if ($this->isInvalidStr($this->prefix)) {
 
-            throw new \Exception('Value not set');
+            return $secret_name;
         }
 
-        if (is_array($new_value)) $new_value = json_encode($new_value, JSON_UNESCAPED_SLASHES);
-
-        $transaction = $this->datastore->transaction();
-
-        $entity = $transaction->lookup($this->ds_key);
-
-        $entity[$property] = json_encode($new_value);
-
-        $transaction->upsert($entity);
-
-        $transaction->commit();
-
-        //save
-        $this->writeSecret($this->generateSecretPath($property), $new_value);
+        return $this->prefix . '_' . $secret_name;
     }
 
-//    public function set($secret_name, $secret) {
-//
-//        $this->writeSecret($this->generateSecretPath($secret_name), $secret);
-//    }
 
+    //used for secret filenames and secretstore property names
+    private function sanitizeSecretName($secret_name) {
+
+        $pattern = '/^[\w\d\s\-_]{4,}$/';
+        if ($this->isInvalidStr($secret_name) || !preg_match($pattern, $secret_name)) {
+
+            throw new \Exception("Valid secret name string is required: " . $pattern);
+        }
+
+        //append the suffix, trade spaces for underscores and lower
+        return strtolower(str_replace(' ', '_', $secret_name));
+    }
+
+
+    private function generateSecretPath($secret_name)
+    {
+        if ($this->isInvalidStr($secret_name)) {
+
+            throw new \Exception('Secret name string is required');
+        }
+
+        return $this->secrets_path . '/' . $secret_name . '.json';
+    }
 
 
     private function arraySecretFromFile($secret_path) : array {
@@ -110,14 +109,14 @@ class SecretDataStore implements ISecretStore
     }
 
 
-    private function arraySecretFromDataStore($property) : array {
+    private function arraySecretFromDataStore($secret_name) : array {
 
-        if ($this->isInvalidStr($property)) {
+        if ($this->isInvalidStr($secret_name)) {
 
-            throw new \Exception('Property name string required');
+            throw new \Exception('Secret property name string required');
         }
 
-        $secret = $this->datastore->lookup($this->ds_key)->$property;
+        $secret = $this->datastore->lookup($this->entity_key)->$secret_name;
         $secret = json_decode($secret, true);
         //$secret = json_decode($this->datastore->get($property), true);
         if (json_last_error() !== JSON_ERROR_NONE) {
@@ -126,33 +125,6 @@ class SecretDataStore implements ISecretStore
         }
         return $secret;
     }
-
-
-    public function get($secret_name) {
-
-        if ($this->isInvalidStr($secret_name)) {
-
-            throw new \Exception('Secret name string is required');
-        }
-
-        //try local file cache
-        if ($secret = $this->arraySecretFromFile($this->generateSecretPath($secret_name))) {
-
-            return $secret;
-        }
-
-        //then try secret store
-        if ($secret = $this->arraySecretFromDataStore($secret_name)) {
-
-            //write to local file
-            $this->writeSecret($this->generateSecretPath($secret_name), $secret);
-
-            return $secret;
-        }
-
-        return [];
-    }
-
 
 
     //writes a secret string, secret can be array or json
@@ -177,28 +149,107 @@ class SecretDataStore implements ISecretStore
         //create the dir if necessary
         if (!file_exists(dirname($secret_path))) {
 
-            if (!mkdir(dirname($secret_path), 0700, true)) {
-
-                throw new \Exception('Unable to create directory ' . dirname($secret_path));
-            }
+            throw new \Exception('Secrets path does not exist');
         }
 
         //write the string to the path
         if (!file_put_contents($secret_path, $secret)) {
 
-            throw new \Exception('Unable to write secret to ' . $secret_path);
+            throw new \Exception('Unable to write secret to secret path');
         }
     }
 
 
-    //convenience method
-    private function generateSecretPath($secret_name)
-    {
+    public function get($secret_name) {
+
         if ($this->isInvalidStr($secret_name)) {
 
             throw new \Exception('Secret name string is required');
         }
 
-        return self::SECRET_PATH . '/' . $secret_name . '.json';
+        //clean-up and prefix
+        $secret_name = $this->sanitizeSecretName($this->generatePrefixedSecretName($secret_name));
+
+        //try local file cache
+        if ($secret = $this->arraySecretFromFile($this->generateSecretPath($secret_name))) {
+
+            return $secret;
+        }
+
+        //then try secret store
+        if ($secret = $this->arraySecretFromDataStore($secret_name)) {
+
+            //write to local file
+            $this->writeSecret($this->generateSecretPath($secret_name), $secret);
+
+            return $secret;
+        }
+
+        return [];
+    }
+
+
+    public function set($secret_name, $new_secret) {
+
+        if ($this->isInvalidStr($secret_name)) {
+
+            throw new \Exception('Secret property name string is required');
+        }
+
+        //clean-up and prefix
+        $secret_name = $this->sanitizeSecretName($this->generatePrefixedSecretName($secret_name));
+
+        if (!isset($new_secret)) {
+
+            throw new \Exception('New value not set');
+        }
+
+        //string it
+        if (is_array($new_secret)) $new_value = json_encode($new_secret, JSON_UNESCAPED_SLASHES);
+
+        $transaction = $this->datastore->transaction();
+
+        $entity = $transaction->lookup($this->entity_key);
+
+        $entity[$secret_name] = json_encode($new_secret);
+
+        $transaction->upsert($entity);
+
+        $transaction->commit();
+
+        //save
+        $this->writeSecret($this->generateSecretPath($secret_name), $new_secret);
+    }
+
+
+    public function setKey($kind, $id) {
+
+        if ($this->isInvalidStr($kind)) {
+
+            throw new \Exception('Google Cloud Datastore entity kind is required');
+        }
+
+        if ($this->isInvalidStr($id)) {
+
+            throw new \Exception('Google Cloud Datastore entity id is required');
+        }
+
+        $this->entity_key = $this->datastore->key($kind, $id);
+    }
+
+    
+    public static function create(DatastoreClient $datastore, $secrets_path, $prefix = NULL) {
+        
+        if (!file_exists(dirname($secrets_path))) {
+
+            throw new \Exception('Secrets path does not exist');
+        }
+        
+        if ($prefix !== NULL && (!is_string($prefix) || strlen($prefix) === 0)) {
+            
+            throw  new \Exception('Invalid prefix value');
+        }
+
+        return new static($datastore, $secrets_path, $prefix);
     }
 }

@@ -19,6 +19,7 @@ class MessageController implements IController
     public function __construct(\Google_Client $gclient)
     {
 
+        //authenticated google client
         $this->gclient = $gclient;
     }
 
@@ -27,25 +28,12 @@ class MessageController implements IController
 
         try {
 
-//            //check the environment for service credentials
-//            if (!getenv('GOOGLE_CLOUD_PROJECT', true)) {
-//
-//                throw new \Exception('Google Cloud Project Id not found');
-//            }
-//
-//            if (!getenv('GOOGLE_APPLICATION_CREDENTIALS', true)) {
-//
-//                throw new\Exception('Google Application credentials path not found');
-//            }
-
             if (!$params['message_id']) {
 
                 throw new \Exception('Message id is required');
             }
 
-
-
-            //authenicated google service
+            //authenicated gmail service
             $gmail = GmailService::create($this->gclient);
 
             echo json_encode($gmail->getMessage($params['message_id']));

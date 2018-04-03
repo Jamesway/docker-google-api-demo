@@ -7,11 +7,6 @@ services:
     volumes:
       - ./:/var/www
     env_file: .env
-    environment:
-      #app engine service credentials path
-      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
-      #relative to php-fpm volume
-      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
 
   php-cli:
     image: jamesway/php71-cli-dev

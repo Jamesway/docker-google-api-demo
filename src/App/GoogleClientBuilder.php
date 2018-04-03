@@ -60,7 +60,7 @@ class GoogleClientBuilder
 
 
     //secret name is the name of the file and/or datastore property
-    public function authenticateClient($app_name, array $scopes, $client_id_name, $credentials_name) {
+    public function authenticateClient($app_name, array $scopes) {
 
         if ($this->isInvalidStr($app_name)) {
 
@@ -71,19 +71,6 @@ class GoogleClientBuilder
 
             throw new \Exception('An array of scope(s) is required: ');
         }
-
-        if ($this->isInvalidStr($client_id_name)) {
-
-            throw new \Exception('Client Id name string is required');
-        }
-        $client_id_name = $this->sanitizeSecretName($client_id_name);
-
-        if ($this->isInvalidStr($credentials_name)) {
-
-            throw new \Exception('Credentials name string is required');
-        }
-        $credentials_name = $this->sanitizeSecretName($credentials_name);
-
 
         //TODO does app_name affect anything
         //application name
@@ -96,16 +83,16 @@ class GoogleClientBuilder
         $this->gclient->setScopes(implode(' ', $scopes));
 
         //client id
-        $this->gclient->setAuthConfig($this->secret_store->get($client_id_name));
+        $this->gclient->setAuthConfig($this->secret_store->get('client_id'));
 
         //credentials
-        $this->gclient->setAccessToken($this->secret_store->get($credentials_name));
+        $this->gclient->setAccessToken($this->secret_store->get('credentials'));
 
 
         //refresh credentials if they need it
         if ($this->gclient->isAccessTokenExpired()) {
 
-            $this->secret_store->set($credentials_name, $this->refreshCredentials());
+            $this->secret_store->set('credentials', $this->refreshCredentials());
         }
     }
 
