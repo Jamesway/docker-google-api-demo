@@ -25,8 +25,6 @@ class GmailService
     }
 
 
-
-
     //https://developers.google.com/gmail/api/v1/reference/users/messages/list
     public function getList($page_token = NULL, $limit = 10) {
 
@@ -47,6 +45,7 @@ class GmailService
         }
         return [];
     }
+
 
     public function getHistoryList($history_id, $page_token = NULL, $limit = 10) {
 
@@ -125,28 +124,6 @@ class GmailService
         $next = $page_token ? trim(implode(':', $page_history) . ':' . $page_token, ':') : NULL;
 
         return ["prev" => $prev, "next" => $next];
-    }
-
-
-    /*public function parseMessage(IParser $parser, $raw_message) {
-
-
-    }*/
-
-
-    public function batch(array $messages) : array {
-
-        $gclient = $this->gmail->getClient();
-        $gclient->setUseBatch(true);
-
-        $batch = new \Google_Http_Batch($gclient);
-        $gmail_batch = new \Google_Service_Gmail($gclient, $this->user_id);
-
-        foreach ($messages as $msg) {
-
-
-        }
-        return $meta;
     }
 
 
