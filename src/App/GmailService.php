@@ -134,9 +134,19 @@ class GmailService
     }*/
 
 
-    public function watch() {
+    public function batch(array $messages) : array {
+
+        $gclient = $this->gmail->getClient();
+        $gclient->setUseBatch(true);
+
+        $batch = new \Google_Http_Batch($gclient);
+        $gmail_batch = new \Google_Service_Gmail($gclient, $this->user_id);
+
+        foreach ($messages as $msg) {
 
 
+        }
+        return $meta;
     }
 
 

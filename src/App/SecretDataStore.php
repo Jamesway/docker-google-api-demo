@@ -15,10 +15,14 @@ class SecretDataStore implements ISecretStore
 
     //https://cloud.google.com/datastore/docs/concepts/entities
 
-    const GCDS_KIND = 'config';
-    const GCDS_ID = '5629499534213120';
+    //const GCDS_KIND = 'config';
+    //const GCDS_ID = '5629499534213120';
 
     protected $ds_key;
+
+    protected $kind;
+
+    protected $id;
 
     protected $datastore;
 
@@ -30,13 +34,15 @@ class SecretDataStore implements ISecretStore
 
             throw new \Exception('Google Cloud Datastore Kind required');
         }
+        $this->kind = $kind;
 
         if ($this->isInvalidStr($id)) {
 
             throw new \Exception('Google Cloud Datastore ID required');
         }
+        $this->id = $id;
 
-        $this->ds_key = $datastore->key(self::GCDS_KIND, self::GCDS_ID);
+        $this->ds_key = $datastore->key($this->kind, $this->id);
 
         $this->datastore = $datastore;
     }

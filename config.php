@@ -4,6 +4,22 @@ use Psr\Container\ContainerInterface as ContainerInterface;
 
 return [
 
+    /***********************************/
+    /* change these to suit your needs */
+
+    /* Google Cloud Datastore Entity Values */
+    'secretstore.kind' => 'config',
+    'secretstore.id' => '5629499534213120',
+
+    /* Google Client */
+    'gclient.app_name' => 'JMail',
+    'gclient.secret_name' => 'GMAIL_READONLY',
+    'gclient.scopes' => [\Google_Service_Gmail::GMAIL_READONLY],
+
+    /***********************************/
+
+
+    /* DI Container */
     'Psr\Container\ContainerInterface' => function (ContainerInterface $container) {
         return $container;
     },
@@ -24,28 +40,20 @@ return [
 
 
     /* Secret Store */
-    /* Google Cloud Datastore Entity Values */
-    'datastore.kind' => 'config',
-    'datastore.id' => '5629499534213120',
+    'App\ISecretStore' => function(ContainerInterface $c) {
 
-    'App\SecretStore' => function(ContainerInterface $c) {
-
-        return App\SecretDataStore::create($c->get('datastore.kind'), $c->get('datastore.id'));
+        return App\SecretDataStore::create($c->get('secretstore.kind'), $c->get('secretstore.id'));
     },
 
 
     /* Google Client Builder */
     'App\GoogleClientBuilder' => function (ContainerInterface $c) {
 
-        return new App\GoogleClientBuilder(new \Google_Client(), $c->get('App\SecretStore'));
+        return new App\GoogleClientBuilder(new \Google_Client(), $c->get('App\ISecretStore'));
     },
 
 
     /* Google Client */
-    'gclient.app_name' => 'JMail',
-    'gclient.secret_name' => 'GMAIL_READONLY',
-    'gclient.scopes' => [\Google_Service_Gmail::GMAIL_READONLY],
-
     'Google_Client' => function (ContainerInterface $c) {
 
         $builder = $c->get('App\GoogleClientBuilder');
@@ -59,5 +67,6 @@ return [
 
 
     /* twig */
-    'Twig_LoaderInterface' => DI\create('Twig_Loader_Filesystem')->constructor(__DIR__ . '/resources/views'),
+    'Twig_LoaderInterface' => DI\create('Twig_Loader_Filesystem')
+        ->constructor(__DIR__ . '/resources/views'),
 ];

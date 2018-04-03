@@ -10,13 +10,14 @@ namespace App\Controllers;
 
 
 use App\GmailService;
+use App\ISecretStore;
 use App\SecretDataStore;
 use App\GoogleClientBuilder;
 
 class MailListController implements IController
 {
 
-    protected $container;
+    protected $gclient;
     protected $twig;
 
     public function __construct(\Google_Client $gclient, \Twig_Environment $twig)
@@ -24,6 +25,7 @@ class MailListController implements IController
 
         $this->twig = $twig;
 
+        //authenticated gclient
         $this->gclient = $gclient;
     }
 
@@ -44,18 +46,8 @@ class MailListController implements IController
                 throw new\Exception('Google Application credentials path not found');
             }
 
-
-
-//            //build the builder
-//            $builder = new GoogleClientBuilder(new \Google_Client(), SecretDataStore::create());
-//            $scopes = [\Google_Service_Gmail::GMAIL_READONLY];
-//            $builder->authenticateClient("test app", $scopes, 'GMAIL_READONLY');
-//
-//            //authenticated google client
-//            $gclient = $builder->getClient();
-
             //authenicated google service
-            $gmail = GmailService::create($this->gclient, 'me');
+            $gmail = GmailService::create($this->gclient);
 
             $messages = [];
 
@@ -87,7 +79,7 @@ class MailListController implements IController
             //to get the meta we need to batch gmail->get()
             $this->gclient->setUseBatch(true);
             $batch = new \Google_Http_Batch($this->gclient);
-            $batch_gmail = GmailService::create($this->gclient, 'me');    //batch enable service
+            $batch_gmail = GmailService::create($this->gclient);    //batch enable service
 
             //get subject and from
             foreach ($messages as $msg) {
