@@ -5,22 +5,22 @@ use Psr\Container\ContainerInterface as ContainerInterface;
 return [
 
     /***********************************/
-    /* change these in .env to suit your needs */
+    /* CHANGE THESE TO SUIT YOUR NEEDS */
 
     /* local secrets cache dir */
-    'secrets.path' => getenv("SECRETS_PATH"),
+    'secrets.path' => __DIR__ . '/.secrets',
 
     /* Google Cloud Datastore entity values */
-    'secrets_store.kind' => getenv("GOOGLE_CLOUD_DATASTORE_ENTITY_KIND"),
-    'secrets_store.id' => getenv("GOOGLE_CLOUD_DATASTORE_ENTITY_ID"),
+    'secrets_store.kind' => 'secrets',
+    'secrets_store.id' => '5649391675244544',
 
     /* prefix for secret files/properties */
-    'secrets_store.prefix' => getenv("SECRETS_STORE_PREFIX"),
-
+    'secrets_store.prefix' => 'jmail_demo',
 
     /* Google Client */
-    'gclient.app_name' => getenv("APP_NAME"),
+    'gclient.app_name' => 'JMail Demo',
     'gclient.scopes' => [\Google_Service_Gmail::GMAIL_READONLY],
+
     /***********************************/
 
 

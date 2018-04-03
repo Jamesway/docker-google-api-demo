@@ -104,20 +104,35 @@ This is a light, sans framework demo that includes:
 
 ### Installation
 
-Put your service credentials json in ./secrets and adjust the path/filename in .env  
-
-Create a "config" entity in Datastore and add the entity type and id to the constants in SecretStore.php
-
+- Download your service credentials json to ./secrets and update the "GOOGLE_APPLICATION_CREDENTIALS" path in the .env file. While you're in the .env, set the project id.  
+- Create a "secrets" entity in Datastore and add "client_id" and "credentials" properties
+- Set the values for the properties to the client_id and credentials json you have from authenticating gmail access. [Don't have these?](https://github.com/jamesway/gae-credentials-php71)
+- Update config.php with the kind and id from your secrets entity
+- Install packages
 ```
 docker-compose run --rm php-cli composer install
 docker-compose run --rm php-cli composer dump-autoload
 ```
 
 ### Usage
+#### Local
 ```
 docker-compose up -d
 ```
-**Note: developing on an older mac? You might need docker-sync: TODO link** 
+
+Open a browser to [http://192.168.99.100:8080] or whatever your docker machine ip is.
+
+
+#### GAE
+```
+gcloud app deploy --project [project_id]
+
+... wait ...
+
+gcloud app browse
+```
+
+**Note: developing on an older mac? You might need [docker-sync](https://github.com/jamesway/docker-cheatsheet)** 
 
 
 ### Misc
