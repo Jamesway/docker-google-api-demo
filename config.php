@@ -13,7 +13,8 @@ return [
 
     /* Google Client */
     'gclient.app_name' => 'JMail',
-    'gclient.secret_name' => 'GMAIL_READONLY',
+    'gclient.client_id_name' => 'gmail_readonly_client_id',
+    'gclient.credentials_name' => 'gmail_readonly_credentials',
     'gclient.scopes' => [\Google_Service_Gmail::GMAIL_READONLY],
 
     /***********************************/
@@ -40,11 +41,15 @@ return [
 
 
     /* Secret Store */
-    'App\ISecretStore' => function(ContainerInterface $c) {
+    'App\ISecretStore' => function (ContainerInterface $c) {
 
-        return App\SecretDataStore::create($c->get('secretstore.kind'), $c->get('secretstore.id'));
+        return new App\SecretDataStore(
+            new Google\Cloud\Datastore\DatastoreClient(),
+            $c->get('secretstore.kind'),
+            $c->get('secretstore.id')
+        );
     },
-
+    
 
     /* Google Client Builder */
     'App\GoogleClientBuilder' => function (ContainerInterface $c) {
@@ -60,7 +65,8 @@ return [
         $builder->authenticateClient(
             $c->get('gclient.app_name'),
             $c->get('gclient.scopes'),
-            $c->get('gclient.secret_name')
+            $c->get('gclient.client_id_name'),
+            $c->get('gclient.credentials_name')
         );
         return $builder->getClient();
     },

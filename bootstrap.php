@@ -6,6 +6,19 @@ error_reporting(E_ALL);
 //composer autoload
 require_once __DIR__ . '/vendor/autoload.php';
 
+
+//check the environment for service credentials
+if (!getenv('GOOGLE_CLOUD_PROJECT', true)) {
+
+    throw new \Exception('Google Cloud Project Id not found');
+}
+
+if (!getenv('GOOGLE_APPLICATION_CREDENTIALS', true)) {
+
+    throw new\Exception('Google Application credentials path not found');
+}
+
+
 //DI Container - php-di
 $builder = new \DI\ContainerBuilder();
 $builder->useAutowiring(true);

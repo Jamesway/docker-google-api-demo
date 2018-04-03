@@ -8,11 +8,7 @@
 
 namespace App\Controllers;
 
-
 use App\GmailService;
-use App\ISecretStore;
-use App\SecretDataStore;
-use App\GoogleClientBuilder;
 
 class MailListController implements IController
 {
@@ -25,7 +21,7 @@ class MailListController implements IController
 
         $this->twig = $twig;
 
-        //authenticated gclient
+        //authenticated google client
         $this->gclient = $gclient;
     }
 
@@ -34,17 +30,6 @@ class MailListController implements IController
 
 
         try {
-
-            //check the environment for service credentials
-            if (!getenv('GOOGLE_CLOUD_PROJECT', true)) {
-
-                throw new \Exception('Google Cloud Project Id not found');
-            }
-
-            if (!getenv('GOOGLE_APPLICATION_CREDENTIALS', true)) {
-
-                throw new\Exception('Google Application credentials path not found');
-            }
 
             //authenicated google service
             $gmail = GmailService::create($this->gclient);
