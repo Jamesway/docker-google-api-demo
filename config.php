@@ -12,7 +12,7 @@ return [
 
     /* Google Cloud Datastore entity values */
     'secrets_store.kind' => 'secrets',
-    'secrets_store.id' => '5649391675244544',
+    'secrets_store.id' => '[ENTITY_ID_GOES_HERE]',
 
     /* prefix for secret files/properties */
     'secrets_store.prefix' => 'jmail_demo',
