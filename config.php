@@ -11,8 +11,10 @@ return [
     'secrets.path' => __DIR__ . '/.secrets',
 
     /* Google Cloud Datastore entity values */
-    'secrets_store.kind' => 'secrets',
-    'secrets_store.id' => '[ENTITY_ID_GOES_HERE]',
+    'secrets_store.kind' => 'config',
+
+    /* id for the datastore entity comes from .env, app.yaml */
+    'secrets_store.id' =>   getenv("SECRETSTORE_ENTITY_ID"),
 
     /* prefix for secret files/properties */
     'secrets_store.prefix' => 'jmail_demo',

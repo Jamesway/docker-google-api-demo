@@ -9,7 +9,7 @@ services:
     env_file: .env
 
   php-cli:
-    image: jamesway/php71-cli-dev
+    image: jamesway/php71-cli
     working_dir: /app
     volumes:
       - ./:/app

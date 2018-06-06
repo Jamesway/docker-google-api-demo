@@ -36,7 +36,7 @@ class SecretDataStore implements ISecretStore
 
     private function isInvalidStr($string) {
 
-        return !is_string($string) || strlen($string) === 0;
+        return !is_string($string) || strlen(trim($string)) === 0;
     }
 
 
@@ -209,7 +209,10 @@ class SecretDataStore implements ISecretStore
 
         $transaction = $this->datastore->transaction();
 
-        $entity = $transaction->lookup($this->entity_key);
+        if(!$entity = $transaction->lookup($this->entity_key)) {
+
+            throw new \Exception('no entity for this key');
+        }
 
         $entity[$secret_name] = json_encode($new_secret);
 

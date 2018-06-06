@@ -26,3 +26,9 @@ resources:
   cpu: 1
   memory_gb: 0.5
   disk_size_gb: 10
+
+# https://cloud.google.com/appengine/docs/standard/python/config/appref
+env_variables:
+
+  # Google Cloud Datastore Entity Id
+  SECRETSTORE_ENTITY_ID: #'entity id - can be the same id as .env or different'
